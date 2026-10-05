@@ -1,0 +1,972 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>3Eyes - Industrial Fastener QC Storytelling Dashboard</title>
+  <!-- Google Fonts: Inter & Kanit -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Kanit:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    :root {
+      --bg-main: #090D16;
+      --bg-surface: #111827;
+      --bg-card: #1E293B;
+      --bg-card-hover: #24344D;
+      --border-color: rgba(255, 255, 255, 0.08);
+      --border-highlight: rgba(56, 189, 248, 0.3);
+      --text-main: #F8FAFC;
+      --text-muted: #94A3B8;
+      --color-cyan: #38BDF8;
+      --color-green: #10B981;
+      --color-mint: #34D399;
+      --color-purple: #8B5CF6;
+      --color-amber: #F59E0B;
+      --color-rose: #F43F5E;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      font-family: 'Inter', 'Kanit', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    /* Header Nav */
+    header {
+      background: rgba(17, 24, 39, 0.8);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border-color);
+      padding: 16px 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-logo {
+      background: linear-gradient(135deg, #0284C7, #38BDF8);
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 15px rgba(56, 189, 248, 0.4);
+    }
+
+    .brand-title h1 {
+      font-size: 1.15rem;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+    }
+
+    .brand-title p {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .header-badges {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 500;
+    }
+
+    .badge-live {
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      color: var(--color-green);
+    }
+
+    .badge-live span.dot {
+      width: 8px;
+      height: 8px;
+      background: var(--color-green);
+      border-radius: 50%;
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(1.2); }
+    }
+
+    /* Layout Container */
+    main {
+      flex: 1;
+      padding: 32px;
+      max-width: 1560px;
+      margin: 0 auto;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 32px;
+    }
+
+    /* Section Headings */
+    .section-header {
+      margin-bottom: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+    }
+
+    .section-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .section-title i {
+      color: var(--color-cyan);
+    }
+
+    .section-subtitle {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    /* Act 1: Executive Hook */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 20px;
+    }
+
+    .kpi-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      padding: 22px;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s ease;
+    }
+
+    .kpi-card:hover {
+      border-color: var(--border-highlight);
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
+    }
+
+    .kpi-label {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .kpi-value {
+      font-size: 2.1rem;
+      font-weight: 700;
+      margin: 10px 0 6px;
+      letter-spacing: -0.03em;
+    }
+
+    .kpi-footer {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.8rem;
+    }
+
+    .trend-good {
+      color: var(--color-green);
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 2px;
+    }
+
+    .card-glow {
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 100px;
+      height: 100px;
+      background: radial-gradient(circle, var(--glow-color, rgba(56, 189, 248, 0.15)) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    /* Charts Grid */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 24px;
+    }
+
+    .card-col-6 {
+      grid-column: span 6;
+    }
+
+    .card-col-4 {
+      grid-column: span 4;
+    }
+
+    .card-col-8 {
+      grid-column: span 8;
+    }
+
+    .card-col-12 {
+      grid-column: span 12;
+    }
+
+    @media (max-width: 1024px) {
+      .card-col-6, .card-col-4, .card-col-8 {
+        grid-column: span 12;
+      }
+    }
+
+    .chart-panel {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .chart-panel-header {
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .chart-title {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--text-main);
+    }
+
+    .chart-desc {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .chart-canvas-container {
+      position: relative;
+      flex: 1;
+      min-height: 280px;
+      width: 100%;
+    }
+
+    /* Heatmap styling */
+    .heatmap-grid {
+      display: grid;
+      grid-template-columns: 120px repeat(3, 1fr);
+      gap: 10px;
+      margin-top: 15px;
+    }
+
+    .heatmap-header {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-align: center;
+      padding: 8px;
+    }
+
+    .heatmap-row-label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+    }
+
+    .heatmap-cell {
+      border-radius: 8px;
+      padding: 16px;
+      text-align: center;
+      font-weight: 600;
+      font-size: 0.95rem;
+      transition: transform 0.2s;
+      cursor: pointer;
+    }
+
+    .heatmap-cell:hover {
+      transform: scale(1.03);
+    }
+
+    .heat-low {
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      color: #34D399;
+    }
+
+    .heat-med {
+      background: rgba(245, 158, 11, 0.15);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      color: #FBBF24;
+    }
+
+    .heat-high {
+      background: rgba(244, 63, 94, 0.25);
+      border: 1px solid rgba(244, 63, 94, 0.5);
+      color: #FB7185;
+      animation: pulse-border 2s infinite;
+    }
+
+    @keyframes pulse-border {
+      0%, 100% { box-shadow: 0 0 0 rgba(244, 63, 94, 0); }
+      50% { box-shadow: 0 0 12px rgba(244, 63, 94, 0.4); }
+    }
+
+    /* Act 4 Action Cards */
+    .action-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 18px;
+    }
+
+    .action-card {
+      background: var(--bg-surface);
+      border-left: 4px solid var(--border-accent, var(--color-cyan));
+      border-radius: 0 10px 10px 0;
+      padding: 18px;
+      display: flex;
+      gap: 14px;
+    }
+
+    .action-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.05);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .action-content h4 {
+      font-size: 0.9rem;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .action-content p {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+
+    .action-tag {
+      display: inline-block;
+      margin-top: 8px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
+
+    /* Inspection Data Table */
+    .table-container {
+      overflow-x: auto;
+      margin-top: 12px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.82rem;
+    }
+
+    th {
+      background: rgba(255, 255, 255, 0.03);
+      padding: 12px 14px;
+      color: var(--text-muted);
+      font-weight: 600;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    td {
+      padding: 12px 14px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      color: var(--text-main);
+    }
+
+    tr:hover td {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .status-pill {
+      padding: 3px 10px;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .status-pass {
+      background: rgba(16, 185, 129, 0.15);
+      color: #34D399;
+    }
+
+    .status-reject {
+      background: rgba(244, 63, 94, 0.15);
+      color: #FB7185;
+    }
+
+    /* Footer */
+    footer {
+      border-top: 1px solid var(--border-color);
+      background: var(--bg-surface);
+      padding: 24px 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .team-badge {
+      display: flex;
+      gap: 16px;
+    }
+
+    .team-badge span strong {
+      color: var(--text-main);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Navigation Header -->
+  <header>
+    <div class="brand">
+      <div class="brand-logo">
+        <i data-lucide="eye" style="color: white; width: 22px; height: 22px;"></i>
+      </div>
+      <div class="brand-title">
+        <h1>3Eyes Industrial Quality Intelligence</h1>
+        <p>Automotive Fastener Anomaly Detection & Business Analytics</p>
+      </div>
+    </div>
+    <div class="header-badges">
+      <div class="badge badge-live">
+        <span class="dot"></span> 3-Angle Vision Online
+      </div>
+      <div class="badge" style="background: rgba(56, 189, 248, 0.1); border: 1px solid rgba(56, 189, 248, 0.2); color: #38BDF8;">
+        <i data-lucide="shield-check" style="width: 14px; height: 14px;"></i> IATF 16949 Compliant
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- ACT 1: EXECUTIVE HOOK -->
+    <section>
+      <div class="section-header">
+        <div>
+          <div class="section-title"><i data-lucide="activity"></i> Act 1: Executive Performance Hook</div>
+          <div class="section-subtitle">ภาพรวมความสำเร็จด้านผลผลิต ต้นทุน และความแม่นยำระดับสายการประกอบรถยนต์</div>
+        </div>
+        <div style="font-size: 0.8rem; color: var(--text-muted);">
+          รอบการผลิต: ตุลาคม 2026
+        </div>
+      </div>
+
+      <div class="kpi-grid">
+        <!-- KPI 1 -->
+        <div class="kpi-card" style="--glow-color: rgba(56, 189, 248, 0.2);">
+          <div class="card-glow"></div>
+          <div class="kpi-label">Total Inspected Bolts</div>
+          <div class="kpi-value" style="color: var(--color-cyan);">1,248,500</div>
+          <div class="kpi-footer">
+            <span class="trend-good"><i data-lucide="arrow-up-right" style="width: 16px;"></i> 100% In-line</span>
+            <span style="color: var(--text-muted);">ครบทุกชิ้นงานบนสายพาน</span>
+          </div>
+        </div>
+
+        <!-- KPI 2 -->
+        <div class="kpi-card" style="--glow-color: rgba(16, 185, 129, 0.2);">
+          <div class="card-glow"></div>
+          <div class="kpi-label">Defect Escape Rate (PPM)</div>
+          <div class="kpi-value" style="color: var(--color-green);">28 PPM</div>
+          <div class="kpi-footer">
+            <span class="trend-good"><i data-lucide="arrow-down-right" style="width: 16px;"></i> -98.1%</span>
+            <span style="color: var(--text-muted);">จากเดิม 1,500 PPM (เป้าหมาย &lt;50)</span>
+          </div>
+        </div>
+
+        <!-- KPI 3 -->
+        <div class="kpi-card" style="--glow-color: rgba(245, 158, 11, 0.2);">
+          <div class="card-glow"></div>
+          <div class="kpi-label">Avg Inspection Cycle Time</div>
+          <div class="kpi-value" style="color: var(--color-amber);">120 ms</div>
+          <div class="kpi-footer">
+            <span class="trend-good" style="color: var(--color-cyan);"><i data-lucide="zap" style="width: 15px;"></i> 20.8x Speedup</span>
+            <span style="color: var(--text-muted);">เทียบกับคนตรวจ (2,500 ms)</span>
+          </div>
+        </div>
+
+        <!-- KPI 4 -->
+        <div class="kpi-card" style="--glow-color: rgba(52, 211, 153, 0.2);">
+          <div class="card-glow"></div>
+          <div class="kpi-label">Net Monthly Cost Savings</div>
+          <div class="kpi-value" style="color: var(--color-mint);">฿432,000</div>
+          <div class="kpi-footer">
+            <span class="trend-good"><i data-lucide="trending-up" style="width: 16px;"></i> คืนทุน 4.2 เดือน</span>
+            <span style="color: var(--text-muted);">ลดค่าปรับเคลมสินค้า</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ACT 2: ANOMALY DIAGNOSIS -->
+    <section>
+      <div class="section-header">
+        <div>
+          <div class="section-title"><i data-lucide="crosshair"></i> Act 2: Anomaly Diagnosis & Blind-Spot Resolution</div>
+          <div class="section-subtitle">เจาะลึกมุมกล้องตรวจจับ จุดบอด และสาเหตุรากเหง้า (Root-Cause Analysis)</div>
+        </div>
+      </div>
+
+      <div class="dashboard-grid">
+        <!-- Visual 1: Camera Detection Power -->
+        <div class="chart-panel card-col-6">
+          <div class="chart-panel-header">
+            <div>
+              <div class="chart-title">ประสิทธิภาพการตรวจจับจำแนกตามมุมกล้อง 3 มุม</div>
+              <div class="chart-desc">พิสูจน์ว่าทำไมต้อง 3 มุมมอง: กล้องมุมบน (Top) พลาดเกลียวล้มถึง 68%</div>
+            </div>
+            <i data-lucide="camera" style="color: var(--color-cyan); width: 20px;"></i>
+          </div>
+          <div class="chart-canvas-container">
+            <canvas id="cameraEfficacyChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Visual 2: Heatmap Matrix (Line vs Shift) -->
+        <div class="chart-panel card-col-6">
+          <div class="chart-panel-header">
+            <div>
+              <div class="chart-title">ความหนาแน่นของตำหนิ (Line × Shift Matrix)</div>
+              <div class="chart-desc">วิเคราะห์ผลกระทบจากความล้าของพนักงาน (Fatigue) และการสึกหรอของเครื่องจักร</div>
+            </div>
+            <i data-lucide="grid" style="color: var(--color-rose); width: 20px;"></i>
+          </div>
+          <div class="heatmap-grid">
+            <div class="heatmap-header"></div>
+            <div class="heatmap-header">Morning</div>
+            <div class="heatmap-header">Afternoon</div>
+            <div class="heatmap-header">Night Shift</div>
+
+            <div class="heatmap-row-label">LINE-A (Forming)</div>
+            <div class="heatmap-cell heat-low">4 Defects<br><span style="font-size:0.75rem; font-weight:normal;">0.08%</span></div>
+            <div class="heatmap-cell heat-low">6 Defects<br><span style="font-size:0.75rem; font-weight:normal;">0.12%</span></div>
+            <div class="heatmap-cell heat-med">14 Defects<br><span style="font-size:0.75rem; font-weight:normal;">0.28%</span></div>
+
+            <div class="heatmap-row-label">LINE-B (Threading)</div>
+            <div class="heatmap-cell heat-med">11 Defects<br><span style="font-size:0.75rem; font-weight:normal;">0.22%</span></div>
+            <div class="heatmap-cell heat-med">18 Defects<br><span style="font-size:0.75rem; font-weight:normal;">0.36%</span></div>
+            <div class="heatmap-cell heat-high">48 Defects ⚠️<br><span style="font-size:0.75rem; font-weight:normal;">0.96% (Die Wear)</span></div>
+
+            <div class="heatmap-row-label">LINE-C (Plating)</div>
+            <div class="heatmap-cell heat-low">3 Defects<br><span style="font-size:0.75rem; font-weight:normal;">0.06%</span></div>
+            <div class="heatmap-cell heat-low">5 Defects<br><span style="font-size:0.75rem; font-weight:normal;">0.10%</span></div>
+            <div class="heatmap-cell heat-low">7 Defects<br><span style="font-size:0.75rem; font-weight:normal;">0.14%</span></div>
+          </div>
+          <div style="margin-top: 18px; font-size: 0.8rem; color: var(--color-rose); display: flex; align-items: center; gap: 6px;">
+            <i data-lucide="alert-triangle" style="width: 16px;"></i> สัญญาณเตือน: LINE-B ในกะดึก มีตำหนิเกลียวเสียหายพุ่งสูง บ่งชี้การสึกหรอของแม่พิมพ์รีดเกลียว
+          </div>
+        </div>
+
+        <!-- Visual 3: Anomaly Score Distribution -->
+        <div class="chart-panel card-col-12">
+          <div class="chart-panel-header">
+            <div>
+              <div class="chart-title">การกระจายตัวของ Anomaly Score & เส้นตัดแบ่งการตัดสินใจ (Threshold Cutoff)</div>
+              <div class="chart-desc">การแยกตัวระหว่างน็อตดี (Normal < 0.20) และน็อตเสีย (Defective > 0.75) ด้วยโมเดล PatchCore</div>
+            </div>
+            <span class="badge" style="background: rgba(244, 63, 94, 0.15); color: #FB7185; border: 1px solid rgba(244, 63, 94, 0.3);">
+              Operating Threshold = 0.750
+            </span>
+          </div>
+          <div class="chart-canvas-container" style="min-height: 220px;">
+            <canvas id="anomalyDistributionChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ACT 3: BUSINESS IMPACT -->
+    <section>
+      <div class="section-header">
+        <div>
+          <div class="section-title"><i data-lucide="pie-chart"></i> Act 3: Business Economic Impact (Before vs After)</div>
+          <div class="section-subtitle">การเปรียบเทียบเชิงประจักษ์ด้านต้นทุน เวลา และเส้นทางคืนทุนการลงทุน (ROI)</div>
+        </div>
+      </div>
+
+      <div class="dashboard-grid">
+        <!-- Before vs After Comparison -->
+        <div class="chart-panel card-col-6">
+          <div class="chart-panel-header">
+            <div>
+              <div class="chart-title">เปรียบเทียบตัวชี้วัดหลัก: ก่อนใช้ (Manual QC) vs หลังใช้ (3Eyes Vision)</div>
+              <div class="chart-desc">ลดต้นทุนความผิดพลาด (Cost of Poor Quality) ได้อย่างมีนัยสำคัญ</div>
+            </div>
+          </div>
+          <div class="chart-canvas-container">
+            <canvas id="beforeAfterChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Cumulative Payback Curve -->
+        <div class="chart-panel card-col-6">
+          <div class="chart-panel-header">
+            <div>
+              <div class="chart-title">เส้นทางคืนทุนสะสม & การประหยัดสุทธิ (Payback Curve)</div>
+              <div class="chart-desc">จุดคุ้มทุน (Breakeven Point) เกิดขึ้นในเดือนที่ 4.2 หลังหักค่า Hardware และบำรุงรักษา</div>
+            </div>
+            <span style="font-size:0.85rem; font-weight:600; color:var(--color-green);">Breakeven @ M4.2</span>
+          </div>
+          <div class="chart-canvas-container">
+            <canvas id="paybackCurveChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ACT 4: ACTIONABLE INSIGHTS & REAL-TIME LOG -->
+    <section>
+      <div class="section-header">
+        <div>
+          <div class="section-title"><i data-lucide="check-circle-2"></i> Act 4: Prescriptive Decisions & Inspection Feed</div>
+          <div class="section-subtitle">ข้อสั่งการสำหรับหัวหน้าฝ่ายผลิตและตารางบันทึกการตรวจสอบย้อนกลับ (Traceability Log)</div>
+        </div>
+      </div>
+
+      <div class="action-grid" style="margin-bottom: 24px;">
+        <div class="action-card" style="--border-accent: var(--color-rose);">
+          <div class="action-icon" style="color: var(--color-rose);"><i data-lucide="wrench"></i></div>
+          <div class="action-content">
+            <h4>เปลี่ยนลูกรีดเกลียว (Threading Die) บน LINE-B</h4>
+            <p>พบอัตรา Thread Damage เพิ่มขึ้น 28% ในรอบ 24 ชั่วโมงที่ผ่านมา แนะนำซ่อมบำรุงก่อนเริ่มกะถัดไป</p>
+            <span class="action-tag" style="background: rgba(244, 63, 94, 0.2); color: #FB7185;">Critical Maintenance</span>
+          </div>
+        </div>
+
+        <div class="action-card" style="--border-accent: var(--color-amber);">
+          <div class="action-icon" style="color: var(--color-amber);"><i data-lucide="sliders"></i></div>
+          <div class="action-content">
+            <h4>ปรับจูน Threshold แสงสะท้อนมุม Top_Head</h4>
+            <p>พบการ Override จากช่างตรวจที่คะแนน 0.68–0.72 บ่อยครั้ง แนะนำ Calibrate กรองแสงสะท้อนชุบสังกะสี</p>
+            <span class="action-tag" style="background: rgba(245, 158, 11, 0.2); color: #FBBF24;">Threshold Optimization</span>
+          </div>
+        </div>
+
+        <div class="action-card" style="--border-accent: var(--color-cyan);">
+          <div class="action-icon" style="color: var(--color-cyan);"><i data-lucide="truck"></i></div>
+          <div class="action-content">
+            <h4>แจ้งเคลมวัตถุดิบลวดเหล็ก (Wire Rod Lot 02)</h4>
+            <p>ตรวจพบลักษณะปลายเกลียวมีเศษครีบ (Burr) เกินมาตรฐาน แนะนำให้ฝ่ายจัดซื้อตรวจใบมีดตัดของ Supplier</p>
+            <span class="action-tag" style="background: rgba(56, 189, 248, 0.2); color: #38BDF8;">Supplier Quality</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Live Inspection Log Table -->
+      <div class="chart-panel">
+        <div class="chart-panel-header">
+          <div>
+            <div class="chart-title">บันทึกผลการตรวจสอบน็อตย้อนกลับล่าสุด (IATF 16949 Production Log)</div>
+            <div class="chart-desc">ดึงข้อมูลจริงจาก <code>data/raw_inspection_log.csv</code> เพื่อการสืบย้อนกลับระดับชิ้นงาน (Traceability)</div>
+          </div>
+          <div style="font-size:0.8rem; color: var(--text-muted);">Showing recent 6 lots</div>
+        </div>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Timestamp</th>
+                <th>Bolt ID</th>
+                <th>Line</th>
+                <th>Shift</th>
+                <th>Camera View</th>
+                <th>Defect Type</th>
+                <th>Anomaly Score</th>
+                <th>QC Result</th>
+                <th>Time (ms)</th>
+                <th>Override</th>
+              </tr>
+            </thead>
+            <tbody id="inspectionTableBody">
+              <!-- Dynamically populated via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer with Team Metadata -->
+  <footer>
+    <div>
+      <strong>3Eyes Anomaly Detection</strong> • วิชา Business Idea Creation (การสร้างสรรค์แนวคิดทางธุรกิจ)
+    </div>
+    <div class="team-badge">
+      <span><strong>Team Roles:</strong> Business Analyst | Data Engineer | BI Designer | Presentation Lead</span>
+    </div>
+  </footer>
+
+  <script>
+    // Initialize Lucide icons
+    lucide.createIcons();
+
+    // Color Constants
+    const COLORS = {
+      cyan: '#38BDF8',
+      cyanBg: 'rgba(56, 189, 248, 0.3)',
+      purple: '#8B5CF6',
+      purpleBg: 'rgba(139, 92, 246, 0.3)',
+      amber: '#F59E0B',
+      amberBg: 'rgba(245, 158, 11, 0.3)',
+      green: '#10B981',
+      rose: '#F43F5E',
+      slate: '#64748B',
+      textMuted: '#94A3B8',
+      gridColor: 'rgba(255, 255, 255, 0.06)'
+    };
+
+    Chart.defaults.color = COLORS.textMuted;
+    Chart.defaults.font.family = "'Inter', 'Kanit', sans-serif";
+
+    // 1. Camera Angle Detection Power Chart
+    new Chart(document.getElementById('cameraEfficacyChart'), {
+      type: 'bar',
+      data: {
+        labels: ['เกลียวเสียหาย (Thread)', 'หัวน็อตร้าว (Head Crack)', 'ครีบ/เสี้ยน (Burr)', 'บ่ากระแทก (Flange Dent)'],
+        datasets: [
+          {
+            label: 'Top_Head (มุมบน)',
+            data: [15, 94, 22, 91],
+            backgroundColor: COLORS.cyan,
+            borderRadius: 6
+          },
+          {
+            label: 'Side_Radial (มุมข้างรอบตัว)',
+            data: [98, 32, 64, 45],
+            backgroundColor: COLORS.purple,
+            borderRadius: 6
+          },
+          {
+            label: 'Bottom_Tip (มุมปลายเกลียว)',
+            data: [42, 10, 92, 18],
+            backgroundColor: COLORS.amber,
+            borderRadius: 6
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          x: { grid: { display: false } },
+          y: { 
+            beginAtZero: true, 
+            max: 100,
+            ticks: { callback: v => v + '%' },
+            grid: { color: COLORS.gridColor }
+          }
+        },
+        plugins: {
+          legend: { position: 'top', labels: { boxWidth: 12, padding: 16 } },
+          tooltip: {
+            callbacks: {
+              label: c => ` ${c.dataset.label}: ${c.raw}% ตรวจจับได้`
+            }
+          }
+        }
+      }
+    });
+
+    // 2. Anomaly Score Distribution Chart
+    new Chart(document.getElementById('anomalyDistributionChart'), {
+      type: 'line',
+      data: {
+        labels: ['0.05', '0.15', '0.25', '0.35', '0.45', '0.55', '0.65', '0.75 (Cutoff)', '0.85', '0.95'],
+        datasets: [
+          {
+            label: 'Normal Bolts (ชิ้นงานปกติ)',
+            data: [580, 890, 240, 45, 12, 4, 1, 0, 0, 0],
+            borderColor: COLORS.green,
+            backgroundColor: 'rgba(16, 185, 129, 0.15)',
+            fill: true,
+            tension: 0.4
+          },
+          {
+            label: 'Defective Bolts (ชิ้นงานเสีย)',
+            data: [0, 0, 0, 2, 8, 22, 68, 180, 420, 260],
+            borderColor: COLORS.rose,
+            backgroundColor: 'rgba(244, 63, 94, 0.15)',
+            fill: true,
+            tension: 0.4
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          x: { 
+            title: { display: true, text: 'Anomaly Score (PatchCore Model)' },
+            grid: { color: COLORS.gridColor }
+          },
+          y: { 
+            grid: { color: COLORS.gridColor },
+            title: { display: true, text: 'จำนวนชิ้นงาน (Bolt Count)' }
+          }
+        },
+        plugins: {
+          legend: { position: 'top', labels: { boxWidth: 12 } }
+        }
+      }
+    });
+
+    // 3. Before vs After Comparison Chart
+    new Chart(document.getElementById('beforeAfterChart'), {
+      type: 'bar',
+      data: {
+        labels: ['Defect Escape (x10 PPM)', 'QC Cycle Time (x100 ms)', 'Customer Claim (x10k ฿)'],
+        datasets: [
+          {
+            label: 'Before (Manual QC)',
+            data: [150, 25, 45],
+            backgroundColor: COLORS.slate,
+            borderRadius: 6
+          },
+          {
+            label: 'After (3Eyes Vision)',
+            data: [2.8, 1.2, 1.8],
+            backgroundColor: COLORS.green,
+            borderRadius: 6
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          x: { grid: { display: false } },
+          y: { grid: { color: COLORS.gridColor }, beginAtZero: true }
+        },
+        plugins: {
+          legend: { position: 'top', labels: { boxWidth: 12 } },
+          tooltip: {
+            callbacks: {
+              afterBody: (c) => {
+                if (c[0].dataIndex === 0) return '• ก่อนใช้: 1,500 PPM | หลังใช้: 28 PPM (-98%)';
+                if (c[0].dataIndex === 1) return '• ก่อนใช้: 2,500 ms | หลังใช้: 120 ms (-95%)';
+                if (c[0].dataIndex === 2) return '• ก่อนใช้: 450,000 ฿ | หลังใช้: 18,000 ฿ (-96%)';
+              }
+            }
+          }
+        }
+      }
+    });
+
+    // 4. Payback Curve Chart
+    new Chart(document.getElementById('paybackCurveChart'), {
+      type: 'line',
+      data: {
+        labels: ['Start', 'M1', 'M2', 'M3', 'M4', 'M5 (Breakeven)', 'M6', 'M8', 'M10', 'M12'],
+        datasets: [
+          {
+            label: 'Net Cumulative Savings (THB)',
+            data: [-1800000, -1368000, -936000, -504000, -72000, 360000, 792000, 1656000, 2520000, 3384000],
+            borderColor: COLORS.cyan,
+            backgroundColor: 'rgba(56, 189, 248, 0.1)',
+            fill: true,
+            tension: 0.25,
+            pointBackgroundColor: (ctx) => ctx.raw >= 0 ? COLORS.green : COLORS.rose,
+            pointRadius: 5
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          x: { grid: { color: COLORS.gridColor } },
+          y: { 
+            grid: { color: COLORS.gridColor },
+            ticks: { callback: v => (v / 1000) + 'k ฿' }
+          }
+        },
+        plugins: {
+          legend: { display: false }
+        }
+      }
+    });
+
+    // Populate Table with Mock Inspection Data
+    const inspectionData = [
+      { time: '08:00:15', id: 'BOLT-1005-001', line: 'LINE-A', shift: 'Morning', view: 'Top_Head', defect: 'Normal', score: '0.048', result: 'Pass', ms: 112, override: 'No' },
+      { time: '08:00:16', id: 'BOLT-1005-001', line: 'LINE-A', shift: 'Morning', view: 'Side_Radial', defect: 'Thread Damage', score: '0.892', result: 'Reject', ms: 125, override: 'No' },
+      { time: '08:03:45', id: 'BOLT-1005-003', line: 'LINE-B', shift: 'Morning', view: 'Top_Head', defect: 'Head Crack', score: '0.931', result: 'Reject', ms: 138, override: 'No' },
+      { time: '08:05:10', id: 'BOLT-1005-004', line: 'LINE-B', shift: 'Morning', view: 'Side_Radial', defect: 'Burr', score: '0.785', result: 'Reject', ms: 121, override: 'No' },
+      { time: '13:20:05', id: 'BOLT-1005-008', line: 'LINE-A', shift: 'Afternoon', view: 'Top_Head', defect: 'Head Crack', score: '0.710', result: 'Pass', ms: 142, override: 'Yes (Glare)' },
+      { time: '20:18:44', id: 'BOLT-1005-013', line: 'LINE-B', shift: 'Night', view: 'Top_Head', defect: 'Head Crack', score: '0.912', result: 'Reject', ms: 133, override: 'No' }
+    ];
+
+    const tbody = document.getElementById('inspectionTableBody');
+    inspectionData.forEach(row => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td style="color:var(--text-muted);">${row.time}</td>
+        <td style="font-weight:600; font-family:monospace;">${row.id}</td>
+        <td><span style="color:var(--color-cyan);">${row.line}</span></td>
+        <td>${row.shift}</td>
+        <td>${row.view}</td>
+        <td><strong>${row.defect}</strong></td>
+        <td><span style="font-family:monospace; color:${parseFloat(row.score) > 0.75 ? COLORS.rose : COLORS.green}">${row.score}</span></td>
+        <td><span class="status-pill ${row.result === 'Pass' ? 'status-pass' : 'status-reject'}">${row.result}</span></td>
+        <td>${row.ms}</td>
+        <td style="color:${row.override.startsWith('Yes') ? COLORS.amber : 'inherit'}">${row.override}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  </script>
+</body>
+</html>

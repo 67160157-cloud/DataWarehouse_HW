@@ -1,0 +1,16 @@
+Timestamp,Bolt_ID,Production_Line_ID,Shift,Camera_View_Type,Angle_Index,Defect_Type,Anomaly_Score,Anomaly_Threshold,Inspection_Result,Inspector_Override,Override_Reason,Inference_Time_ms,Part_Cost_THB,Scrap_Cost_THB
+2026-10-05T08:00:15,BOLT-20261005-001,LINE-A,Morning,Top_Head,7,Normal,0.048,0.750,Pass,No,,112,4.50,0.00
+2026-10-05T08:00:16,BOLT-20261005-001,LINE-A,Morning,Side_Radial,2,Thread Damage,0.892,0.750,Reject,No,,125,4.50,4.50
+2026-10-05T08:01:20,BOLT-20261005-002,LINE-A,Morning,Bottom_Tip,6,Normal,0.091,0.750,Pass,No,,110,4.50,0.00
+2026-10-05T08:03:45,BOLT-20261005-003,LINE-B,Morning,Top_Head,7,Head Crack,0.931,0.750,Reject,No,,138,4.50,4.50
+2026-10-05T08:05:10,BOLT-20261005-004,LINE-B,Morning,Side_Radial,4,Burr,0.785,0.750,Reject,No,,121,4.50,4.50
+2026-10-05T08:07:33,BOLT-20261005-005,LINE-A,Morning,Side_Radial,1,Thread Damage,0.840,0.750,Reject,No,,119,4.50,4.50
+2026-10-05T08:10:04,BOLT-20261005-006,LINE-C,Morning,Top_Head,7,Normal,0.115,0.750,Pass,No,,108,4.50,0.00
+2026-10-05T08:12:18,BOLT-20261005-007,LINE-C,Morning,Side_Radial,3,Normal,0.142,0.750,Pass,No,,115,4.50,0.00
+2026-10-05T13:20:05,BOLT-20261005-008,LINE-A,Afternoon,Top_Head,7,Head Crack,0.710,0.750,Pass,Yes,Shadow noise / False alarm,142,4.50,0.00
+2026-10-05T13:25:40,BOLT-20261005-009,LINE-B,Afternoon,Bottom_Tip,6,Burr,0.815,0.750,Reject,No,,124,4.50,4.50
+2026-10-05T13:30:15,BOLT-20261005-010,LINE-B,Afternoon,Side_Radial,5,Thread Damage,0.948,0.750,Reject,No,,120,4.50,4.50
+2026-10-05T14:02:50,BOLT-20261005-011,LINE-C,Afternoon,Top_Head,7,Normal,0.062,0.750,Pass,No,,105,4.50,0.00
+2026-10-05T20:15:30,BOLT-20261005-012,LINE-A,Night,Side_Radial,2,Thread Damage,0.875,0.750,Reject,No,,131,4.50,4.50
+2026-10-05T20:18:44,BOLT-20261005-013,LINE-B,Night,Top_Head,7,Head Crack,0.912,0.750,Reject,No,,133,4.50,4.50
+2026-10-05T20:25:12,BOLT-20261005-014,LINE-C,Night,Bottom_Tip,6,Burr,0.768,0.750,Reject,No,,126,4.50,4.50
